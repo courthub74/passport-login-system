@@ -1,3 +1,8 @@
+//loads environment variables and set them inside process .env
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config()
+}
+
 //Require express library that was downloaded
 const express = require("express")
 
@@ -6,6 +11,25 @@ const app = express()
 
 //require bcrypt
 const bcrypt = require('bcrypt')
+
+//require passport
+const passport = require("passport")
+
+//require flash
+const flash = require('express-flash')
+
+//require session
+const session = require('express-session')
+
+//require the passport-config
+const initializePassport = require('./passport-config')
+
+//calling function initializePassport
+initializePassport(
+    passport, 
+    email => users.find(user => user.email === email), //find where user.email is == to email and return it
+    id => users.find(user => user.id === id)
+)
 
 //create a variable to store users
 const users = []
@@ -17,9 +41,25 @@ app.set('view engine', 'ejs')
 //access info coming from forms inside of req variable inside of the post method
 app.use(express.urlencoded({ extended: false }))  //req.body.(name field)
 
+//use flash
+app.use(flash())
+
+//use session
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false  //do you want to save an empty value in the session
+}))
+
+//use passport initialize
+app.use(passport.initialize())
+
+//use passport session
+app.use(passport.session())
+
 //set up routes ("/" - root path)
 app.get("/", (req, res) => {
-    res.render('index.ejs', { name: 'Courdevelops'})
+    res.render('index.ejs', { name: 'Courdevelops' })
 })
 
 //login route (get)
@@ -28,9 +68,11 @@ app.get("/login", (req, res) => {
 })
 
 //login route (post)
-app.post("/login", (req, res) => {
-
-})
+app.post("/login", passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/login',
+  failureFlash: true
+}))
 
 //register route (get)
 app.get("/register", (req, res) => {
