@@ -59,7 +59,7 @@ app.use(passport.session())
 
 //set up routes ("/" - root path)
 app.get("/", (req, res) => {
-    res.render('index.ejs', { name: 'Courdevelops' })
+    res.render('index.ejs', { name: req.user.name })
 })
 
 //login route (get)
