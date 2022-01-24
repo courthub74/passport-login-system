@@ -21,6 +21,9 @@ const flash = require('express-flash')
 //require session
 const session = require('express-session')
 
+//require method overide
+const methodOverride = require('method-override')
+
 //require the passport-config
 const initializePassport = require('./passport-config')
 
@@ -56,6 +59,9 @@ app.use(passport.initialize())
 
 //use passport session
 app.use(passport.session())
+
+//use method override
+app.use(methodOverride('_method'))
 
 //set up routes ("/" - root path)
 app.get("/", checkAuthenticated, (req, res) => {
@@ -97,6 +103,12 @@ app.post("/register", async (req, res) => {
     console.log(users)
 })
 
+//logout route
+app.delete('/logout', (req, res) => {
+    req.logOut()
+    res.redirect('/login')
+})
+
 //authenticated
 function checkAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
@@ -108,7 +120,7 @@ function checkAuthenticated(req, res, next) {
 //NOTauthenticated
 function checkNotAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
-       return res.redirect("/")
+       return res.redirect("/") //redirect to home page
     }
     next()
 }
